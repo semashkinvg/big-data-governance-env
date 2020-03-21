@@ -1,0 +1,3 @@
+[submodule "submodules/docker-spark"]
+	path = submodules/docker-spark
+	url = https://github.com/semashkinvg/docker-spark.git

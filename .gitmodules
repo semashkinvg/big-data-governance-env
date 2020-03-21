@@ -1,3 +1,7 @@
 [submodule "submodules/docker-spark"]
 	path = submodules/docker-spark
 	url = https://github.com/semashkinvg/docker-spark.git
+[submodule "submodules/docker-hive"]
+	path = submodules/docker-hive
+	url = https://github.com/semashkinvg/docker-hive.git
+	branch = 2.3.2-postgresql-metastore

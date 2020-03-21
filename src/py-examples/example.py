@@ -1,0 +1,1 @@
+lines = spark.read.text('/1.csv')

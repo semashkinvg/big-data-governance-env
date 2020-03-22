@@ -65,21 +65,12 @@ services:
           - hive-metastore
         ports:
           - 9888:8888
-    hive-server:
+        env_file:
+          - ./hadoop/env
+    hive-metastore:
         image: bde2020/hive:2.3.2-postgresql-metastore
         env_file:
-          - ./hadoop-hive/env
-        depends_on:
-          - hive-metastore
-        environment:
-          HIVE_CORE_CONF_javax_jdo_option_ConnectionURL: "jdbc:postgresql://hive-metastore-postgresql/metastore"
-          SERVICE_PRECONDITION: "namenode:9870 datanode:9864 hive-metastore:9083"
-        ports:
-          - "10000:10000"
-    hive-metastore:
-        image: bde2020/hive:latest
-        env_file:
-          - ./hive-metastore/env
+          - ./hadoop/env
         command: /opt/hive/bin/hive --service metastore
         depends_on: 
           # - hive-metastore-postgresql
@@ -99,31 +90,32 @@ services:
             POSTGRES_DB: metastore
             POSTGRES_USER: hive
             POSTGRES_PASSWORD: hive
-    # zookeeper:
-    #     image: confluentinc/cp-zookeeper:latest
-    #     container_name: "zookeper"
-    #     environment:
-    #       ZOOKEEPER_CLIENT_PORT: 2181
-    #       ZOOKEEPER_TICK_TIME: 2000
-    # kafka:
-    #     image: confluentinc/cp-kafka:latest
-    #     container_name: "kafka"
-    #     depends_on:
-    #       - zookeeper
-    #     ports:
-    #       - 9092:9092
-    #     environment:
-    #       KAFKA_BROKER_ID: 1
-    #       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-    #       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://176.58.105.181:9092
-    #       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-    #       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-    #       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1     
-    # atlas-server:
-    #     build: .
-    #     image: wbaa/rokku-dev-apache-atlas
-    #     ports:
-    #       - "21000:21000"
-    #     depends_on:
-    #       - "zookeeper"
-    #       - "kafka" 
+            
+    zookeeper:
+        image: confluentinc/cp-zookeeper:latest
+        container_name: "zookeper"
+        environment:
+          ZOOKEEPER_CLIENT_PORT: 2181
+          ZOOKEEPER_TICK_TIME: 2000
+    kafka:
+        image: confluentinc/cp-kafka:latest
+        container_name: "kafka"
+        depends_on:
+          - zookeeper
+        ports:
+          - 9092:9092
+        environment:
+          KAFKA_CREATE_TOPICS: "create_events:1:1,delete_events:1:1,ATLAS_HOOK:1:1"
+          KAFKA_BROKER_ID: 1
+          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://176.58.105.181:9092
+          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+          KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1     
+    atlas-server:
+        image: wbaa/rokku-dev-apache-atlas
+        ports:
+          - "21000:21000"
+        depends_on:
+          - "zookeeper"
+          - "kafka" 
